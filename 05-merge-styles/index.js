@@ -12,15 +12,12 @@ async function createBundle() {
 
   const files = await readdir(folder, { withFileTypes: true });
   files.forEach((file) => {
-    if (file.isFile()) {
-      const ext = path.extname(file.name);
-      if (ext === '.css') {
-        const fileCssPath = path.join(folder, file.name);
-        const fileCss = fs.createReadStream(fileCssPath, 'utf-8');
-        fileCss.on('data', (data) => {
-          bundle.write(data);
-        });
-      }
+    if (file.isFile() && path.extname(file.name) === '.css') {
+      const fileCssPath = path.join(folder, file.name);
+      const fileCss = fs.createReadStream(fileCssPath, 'utf-8');
+      fileCss.on('data', (data) => {
+        bundle.write(data);
+      });   
     }
   });
 }

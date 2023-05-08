@@ -23,4 +23,3 @@ rl.on('line', (str) => {
 });
 
 rl.on('SIGINT', final);
-
