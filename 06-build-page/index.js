@@ -66,8 +66,9 @@ function createHtmlFile() {
     const componentsPath = path.join(__dirname, 'components');
     const files = await readdir(componentsPath, { withFileTypes: true });
     for (const file of files) {
-      if (file.isFile()) {
-        const componentName = path.basename(file.name, path.extname(file.name));
+      const ext = path.extname(file.name);
+      if (file.isFile() && ext === '.html') {
+        const componentName = path.basename(file.name, ext);
         const componentPath = path.join(componentsPath, file.name);
         const component = fs.createReadStream(componentPath, 'utf-8');
         component.on('data', (data) => {
