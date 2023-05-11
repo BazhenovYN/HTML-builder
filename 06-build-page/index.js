@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { readdir, stat, copyFile } = require('fs/promises');
+const { rm, mkdir, readdir, stat, copyFile } = require('fs/promises');
 
 const FOLDER_ASSETS = 'assets';
 const FOLDER_STYLES = 'styles';
@@ -8,10 +8,12 @@ const FOLDER_DIST = 'project-dist';
 
 const dist = path.join(__dirname, FOLDER_DIST);
 
-function createFolder(path) {
-  fs.mkdir(path, { recursive: true }, (err) => {
-    if (err) throw err;
-  });
+async function deleteFolder(path) {
+  return await rm(path, { recursive: true, force: true });
+}
+
+async function createFolder(path) {
+  return await mkdir(path, { recursive: true });
 }
 
 async function createBundle() {
@@ -36,7 +38,7 @@ async function copyFolderRecursive(src, dest) {
   const isDirectory = stats.isDirectory();
 
   if (isDirectory) {
-    createFolder(dest);
+    await createFolder(dest);
     const childItems = await readdir(src);
     for (const childItem of childItems) {
       copyFolderRecursive(
@@ -69,7 +71,7 @@ function createHtmlFile() {
         const componentPath = path.join(componentsPath, file.name);
         const component = fs.createReadStream(componentPath, 'utf-8');
         component.on('data', (data) => {
-          html = html.replace(`{{${componentName}}}`, data);
+          html = html.replaceAll(`{{${componentName}}}`, data);
           if (html.search(/{{[a-zA-Z]+}}/g) < 0) {
             outputHtml.write(html);
           }
@@ -79,7 +81,12 @@ function createHtmlFile() {
   });
 }
 
-createFolder(dist);
-createBundle();
-copyAssets();
-createHtmlFile();
+async function build() {
+  await deleteFolder(dist);
+  await createFolder(dist);
+  createBundle();
+  copyAssets();
+  createHtmlFile();
+}
+
+build();
